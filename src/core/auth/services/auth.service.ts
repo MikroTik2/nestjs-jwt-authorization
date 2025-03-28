@@ -7,6 +7,7 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { RegisterDto, LoginDto, ChangePasswordDto, ForgotPasswordDto, ResetPasswordDto, ConfirmationDto } from "../dtos";
 import { ENUM_AUTH_METHOD, ENUM_USER_ROLES, ENUM_TOKEN_TYPE } from "@/common/enums";
 import { MailService } from "@/libs/mail/services";
+import { CloudinaryService } from "@/libs/cloudinary/services";
 import { nanoid } from "nanoid";
 import { IUserPayload } from "@/common/interfaces";
 import { ConfigService } from "@nestjs/config";
@@ -21,6 +22,7 @@ export class AuthService {
         private readonly configService: ConfigService,
         private readonly mailService: MailService,
         private readonly tokenRepository: TokenRepository,
+        private readonly cloudinaryService: CloudinaryService,
     ) {}
 
     public async register(dto: RegisterDto) {
@@ -47,7 +49,6 @@ export class AuthService {
 
         return { user, ...tokens };
     }
-    IRequest;
 
     public async login(dto: LoginDto) {
         const user = await this.userService.findByEmail(dto.email.toLowerCase());
@@ -72,8 +73,10 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public async validateOAuthLogin(req: any) {
-        const { name, email, method } = req.user;
+        const { name, email, method, avatar } = req.user;
+
         let user = await this.userService.findByEmail(req.user.email);
+        const upload = await this.cloudinaryService.upload(avatar);
 
         if (!user) {
             user = await this.userService.create({
@@ -83,6 +86,10 @@ export class AuthService {
                 role: ENUM_USER_ROLES.USER,
                 is_verified: true,
                 password: "",
+                avatar: {
+                    public_id: upload.public_id,
+                    url: upload.secure_url,
+                },
             });
         }
 

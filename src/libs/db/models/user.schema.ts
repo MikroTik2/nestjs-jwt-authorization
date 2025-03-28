@@ -4,6 +4,15 @@ import { ENUM_AUTH_METHOD, ENUM_USER_ROLES } from "@/common/enums";
 
 export type UserDocument = HydratedDocument<User>;
 
+@Schema({ versionKey: false, _id: false })
+class Avatar {
+    @Prop()
+    public_id: string;
+
+    @Prop()
+    url: string;
+}
+
 @Schema({ timestamps: true, versionKey: false })
 export class User {
     @Prop({ required: true, maxLength: 50 })
@@ -21,6 +30,9 @@ export class User {
 
     @Prop({ required: true, default: false })
     is_verified: boolean;
+
+    @Prop({ required: false, type: Avatar })
+    avatar: Avatar;
 
     @Prop({ required: true, enum: ENUM_AUTH_METHOD })
     method: string;

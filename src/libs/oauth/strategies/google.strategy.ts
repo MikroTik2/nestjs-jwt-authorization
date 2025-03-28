@@ -17,11 +17,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, GOOGLE_STRATEGY_N
     }
 
     public async validate(_accessToken: string, _refreshToken: string, profile: Profile, done: VerifyCallback) {
-        const { emails, displayName } = profile;
+        const { emails, displayName, photos } = profile;
 
         const user = {
             name: displayName,
             email: emails[0].value,
+            avatar: photos[0].value,
             method: ENUM_AUTH_METHOD.GOOGLE,
         };
 

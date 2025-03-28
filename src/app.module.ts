@@ -9,6 +9,7 @@ import { DbModule } from "@/libs/db";
 
 import { UserModule } from "@/core/users";
 import { AuthModule } from "@/core/auth";
+import { CloudinaryModule } from "./libs/cloudinary";
 
 @Module({
     imports: [
@@ -19,10 +20,12 @@ import { AuthModule } from "@/core/auth";
 
         UserModule,
         AuthModule,
+
         CachingModule,
         RedisModule,
         MailModule,
         DbModule,
+        CloudinaryModule,
     ],
 })
 export class AppModule {}

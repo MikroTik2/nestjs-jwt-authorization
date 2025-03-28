@@ -1,6 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { ENUM_AUTH_METHOD, ENUM_USER_ROLES } from "@/common/enums";
+import { ApiFile } from "@/common/decorators";
+import { Type } from "class-transformer";
+
+interface IImage {
+    public_id: string;
+    url: string;
+}
 
 export class CreateUserDto {
     @ApiProperty({ description: "Ім'я користувача", example: "Денис" })
@@ -26,9 +33,14 @@ export class CreateUserDto {
     @ApiProperty({ description: "Статус верифікації користувача", example: false, default: false })
     @IsNotEmpty({ message: "Статус верифікації не може бути порожнім" })
     @IsBoolean({ message: "Статус верифікації має бути логічним значенням" })
+    @Type(() => Boolean)
     is_verified: boolean;
 
-    @ApiProperty({ description: "Метод користувача", example: ENUM_AUTH_METHOD })
+    @ApiFile({ isArray: false, description: "Аватарка користувача" })
+    @IsOptional()
+    avatar?: Express.Multer.File | IImage;
+
+    @ApiProperty({ description: "Метод користувача", example: ENUM_AUTH_METHOD.CREDENTIALS })
     @IsString({ message: "Метод має бути рядком" })
     @IsNotEmpty({ message: "Метод не може бути порожнім" })
     @IsEnum(ENUM_AUTH_METHOD, { message: "Невірний метод" })

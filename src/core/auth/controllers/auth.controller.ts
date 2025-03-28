@@ -40,6 +40,7 @@ export class AuthController {
 
     @Post("register")
     @HttpCode(HttpStatus.CREATED)
+    @Serialize(AuthResponseDto)
     @ApiOperation({ summary: "Реєстрація нового користувача" })
     @ApiResponse({ status: HttpStatus.CREATED, description: "Користувач успішно зареєстрований" })
     @ApiResponse({ status: HttpStatus.CONFLICT, description: "Користувач вже існує" })

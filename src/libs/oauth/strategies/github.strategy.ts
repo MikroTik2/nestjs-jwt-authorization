@@ -22,7 +22,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, GITHUB_STRATEGY_N
     }
 
     async validate(accessToken: string, _refreshToken: string, profile: Profile, done) {
-        const { username } = profile;
+        const { username, photos } = profile;
 
         const emails = await firstValueFrom(
             this.httpService
@@ -37,6 +37,7 @@ export class GithubStrategy extends PassportStrategy(Strategy, GITHUB_STRATEGY_N
         const user = {
             name: username,
             email: emails[0].email,
+            avatar: photos[0].value,
             method: ENUM_AUTH_METHOD.GITHUB,
         };
 

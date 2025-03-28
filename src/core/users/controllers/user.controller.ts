@@ -1,5 +1,5 @@
-import { Controller, Get, Patch, Param, Body, Delete, HttpStatus, UseGuards, HttpCode } from "@nestjs/common";
-import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Controller, Get, Patch, Param, Body, Delete, HttpStatus, UseGuards, HttpCode, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { UserService } from "../services";
 import { UpdateUserDto, ResponseUserDto } from "../dtos";
 import { AccessTokenAuthGuard } from "@/libs/security/guards";
@@ -7,6 +7,7 @@ import { AuthUser, Roles, Serialize } from "@/common/decorators";
 import { IUserPayload } from "@/common/interfaces";
 import { RoleGuard } from "@/common/guards";
 import { ENUM_USER_ROLES } from "@/common/enums";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @Controller("users")
 export class UserController {
@@ -29,6 +30,7 @@ export class UserController {
     @ApiResponse({ status: HttpStatus.OK, description: "Інформація про профиль знайдена" })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Помилка сервера" })
     @UseGuards(AccessTokenAuthGuard)
+    @ApiBearerAuth()
     public async getProfile(@AuthUser() user: IUserPayload) {
         return this.userService.findById(user.sub);
     }
@@ -43,15 +45,18 @@ export class UserController {
         return this.userService.findById(id);
     }
 
-    @Patch(":id")
+    @Patch("update")
+    @ApiBearerAuth()
     @Serialize(ResponseUserDto)
     @HttpCode(HttpStatus.OK)
+    @ApiConsumes("multipart/form-data")
     @ApiOperation({ summary: "Оновити деталі користувача" })
     @ApiResponse({ status: HttpStatus.OK, description: "Деталі користувача оновлено" })
     @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, description: "Внутрішня помилка сервера" })
     @UseGuards(AccessTokenAuthGuard)
-    public async update(@AuthUser() user: IUserPayload, @Body() dto: UpdateUserDto) {
-        return this.userService.update(user.sub, dto);
+    @UseInterceptors(FileInterceptor("avatar"))
+    public async update(@UploadedFile() avatar: Express.Multer.File, @AuthUser() user: IUserPayload, @Body() dto: UpdateUserDto) {
+        return this.userService.update(user.sub, dto, avatar);
     }
 
     @Delete(":id")

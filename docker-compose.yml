@@ -3,7 +3,7 @@ version: '3.7'
 services:
   db:
     container_name: mongodb
-    image: mongodb:6.0
+    image: mongo:6.0
     restart: always
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${DB_USER}

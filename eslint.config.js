@@ -43,6 +43,7 @@ module.exports = [
             "@typescript-eslint/explicit-module-boundary-types": "off",
             "import/extensions": "off",
             "import/prefer-default-export": "off",
+            "prefer-promise-reject-errors": "off",
             "class-methods-use-this": "off",
             "no-useless-constructor": "off",
             "import/no-unresolved": "off",
@@ -56,6 +57,7 @@ module.exports = [
             "@typescript-eslint/no-unsafe-call": "off",
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-return": "off",
+            "@typescript-eslint/prefer-promise-reject-errors": "off",
 
             "require-await": "off",
             "@typescript-eslint/require-await": "off",
