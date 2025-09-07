@@ -1,19 +1,31 @@
-import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { validate } from "@/common/env";
 
-import { ApiModule } from '@/api/api.module'
-import { InfraModule } from '@/infra/infra.module'
-import { LibsModule } from '@/libs/libs.module'
+import { CachingModule } from "@/libs/cache";
+import { RedisModule } from "@/libs/redis";
+import { MailModule } from "@/libs/mail";
+import { DbModule } from "@/libs/db";
+
+import { UserModule } from "@/core/users";
+import { AuthModule } from "@/core/auth";
+import { CloudinaryModule } from "./libs/cloudinary";
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({
-			isGlobal: true
-		}),
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+            validate,
+        }),
 
-		ApiModule,
-		InfraModule,
-		LibsModule
-	]
+        UserModule,
+        AuthModule,
+
+        CachingModule,
+        RedisModule,
+        MailModule,
+        DbModule,
+        CloudinaryModule,
+    ],
 })
 export class AppModule {}

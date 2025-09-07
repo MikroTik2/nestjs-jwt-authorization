@@ -1,2 +1,1 @@
-export * from './file.interface'
-export * from './user.interface'
+export * from "./user-payload.interface";

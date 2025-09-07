@@ -1,49 +1,45 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
-import { PassportStrategy } from '@nestjs/passport'
-import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from 'passport-jwt'
-
-import { UserPayload } from '@/common/interfaces'
-import { PrismaService } from '@/infra/prisma/prisma.service'
-import { RedisService } from '@/infra/redis/redis.service'
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from "passport-jwt";
+import { ConfigService } from "@nestjs/config";
+import { REFRESH_STRATEGY_NAME } from "@/libs/security/constants";
+import { RedisService } from "@/libs/redis/services";
+import { UserRepository } from "@/libs/db/repositories";
+import { IUserPayload } from "@/common/interfaces";
 
 @Injectable()
-export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-token-strategy') {
-	public constructor(
-		private readonly configService: ConfigService,
-		private readonly redisService: RedisService,
-		private readonly prismaService: PrismaService
-	) {
-		super({
-			jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
-			ignoreExpiration: false,
-			secretOrKey: configService.get<string>('REFRESH_SECRET'),
-			algorithms: ['HS256'],
-			passReqToCallback: true
-		} as StrategyOptionsWithRequest)
-	}
+export class RefreshTokenStrategy extends PassportStrategy(Strategy, REFRESH_STRATEGY_NAME) {
+    public constructor(
+        private readonly configService: ConfigService,
+        private readonly redisService: RedisService,
+        private readonly userRepository: UserRepository,
+    ) {
+        super({
+            jwtFromRequest: ExtractJwt.fromBodyField("refreshToken"),
+            ignoreExpiration: false,
+            secretOrKey: configService.get<string>("REFRESH_SECRET"),
+            algorithms: ["HS256"],
+            passReqToCallback: true,
+        } as StrategyOptionsWithRequest);
+    }
 
-	public async validate(req: Request, payload: UserPayload) {
-		const token = ExtractJwt.fromBodyField('refreshToken')(req)
-		const isTokenInBlacklist = await this.redisService.get(token)
+    public async validate(req: Request, payload: IUserPayload) {
+        const token = ExtractJwt.fromBodyField("refreshToken")(req);
+        const isTokenInBlacklist = await this.redisService.get(token);
 
-		if (isTokenInBlacklist) {
-			throw new UnauthorizedException('Token is in blacklist')
-		}
+        if (isTokenInBlacklist) {
+            throw new UnauthorizedException("Токен вже в чорному списку");
+        }
 
-		const user = await this.prismaService.user.findUnique({
-			where: {
-				id: payload.sub
-			}
-		})
+        const user = await this.userRepository.findById(payload.sub);
 
-		if (!user) {
-			throw new UnauthorizedException('Please login to continue')
-		}
+        if (!user) {
+            throw new UnauthorizedException("Будь ласка, увійдіть, щоб продовжити");
+        }
 
-		return {
-			sub: payload.sub,
-			email: payload.email
-		}
-	}
+        return {
+            sub: payload.sub,
+            email: payload.email,
+        };
+    }
 }
